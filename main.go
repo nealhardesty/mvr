@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+  "strings"
 )
 
 func mvr(regexString string, regexReplaceString string, files []string, dryRun bool) error {
@@ -29,6 +30,27 @@ func mvr(regexString string, regexReplaceString string, files []string, dryRun b
 	return lastErr
 }
 
+func mvr_noregex(str string, replaceStr string, files []string, dryRun bool) error {
+	var lastErr error = nil
+	for _, filename := range files {
+		replacementFilename := strings.ReplaceAll(filename, str, replaceStr)
+		fmt.Printf("'%s' > '%s' ... ", filename, replacementFilename)
+
+		if !dryRun {
+			err := os.Rename(filename, replacementFilename)
+			if err != nil {
+				fmt.Printf("%v.\n", err)
+				lastErr = err
+			} else {
+				fmt.Printf("done.\n")
+			}
+		} else {
+			fmt.Printf("dry run.\n")
+		}
+	}
+	return lastErr
+}
+
 func main() {
 	flag.Usage = func() {
 		fmt.Printf("Usage: %v [options] <regex string> <regex replacement string> [files]*\n", os.Args[0])
@@ -36,6 +58,7 @@ func main() {
 	}
 
 	dryRun := flag.Bool("d", false, "dry run only")
+  noRegex := flag.Bool("x", false, "disable regex, string replacement only")
 	flag.Parse()
 	remainingArgs := flag.Args()
 
@@ -48,7 +71,12 @@ func main() {
 	regexReplace := remainingArgs[1]
 	files := remainingArgs[2:]
 
-	err := mvr(regex, regexReplace, files, *dryRun)
+  var err error
+  if *noRegex {
+	  err = mvr_noregex(regex, regexReplace, files, *dryRun)
+  } else {
+	  err = mvr(regex, regexReplace, files, *dryRun)
+  }
 	if err != nil {
 		os.Exit(1)
 	} else {
