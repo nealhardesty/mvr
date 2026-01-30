@@ -20,6 +20,12 @@ This produces `bin/mvr`. Alternatively:
 go build -o bin/mvr .
 ```
 
+You can also install directly into your `GOPATH/bin`:
+
+```bash
+go install github.com/nealhardesty/mvr@latest
+```
+
 ## Usage
 
 ```
